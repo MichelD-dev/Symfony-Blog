@@ -1,0 +1,89 @@
+Twig
+
+Lorsque nous terminons notre fonction, nous lui indiquons quel type d'objet de type Reponse rendre. En utilisant $this->render, nous indiquons à Symfony que nous allons transiter par Twig afin de générer la Response que nous désirons envoyer à la requête client.
+$this->render est une fonction particulière qui rendra une erreur si notre installation n'intègre pas Twig. Cette fonction prend deux arguments: une chaîne de caractères qui servira à indiquer l'adresse du fichier twig qui sera utilisé pour générer notre page, et un tableau associatif qui comportera les différentes variables à porter sur notre page Twig.
+
+Twig est avant tout un langage de template. C'est un langage visant à alléger le code de notre page web en remplaçant tout le PHP par une série de balises à l'apparence plus légère. Il est possible d'installer Symfony sans utiliser Twig, et il est également possible d'utiliser Twig sur un projet PHP qui n'emploie pas Symfony. Cependant, Twig est optimisé pour Symfony et, dans sa configuration de base, Symfony installe Twig par défaut.
+
+Encore une fois, la principale qualité (et l'intérêt) de Twig réside dans son hyper-simplicité. Twig est un langage qui se greffe au HTML. Chacune des instructions du langage de template sera effectué selon trois types de balise:
+	{{ *** }} -> Les doubles accolades sont utilisées pour afficher le contenu d'une variable ou le résultat d'une expression
+	{% *** %} -> L'accolade-pourcentage est utilisée dans le cadre des structures de contrôle (if, foreach, include, ou encore déclaration d'héritage)
+	{# *** #} -> L'accolade-dièse sert à écrire des commentaires. Contrairement aux commentaires HTML, ces commentaires Twig ne seront pas visibles depuis le code-source de la page.
+	<!--
+		Ceci est un commentaire HTML (visible depuis le code source)
+	-->
+
+Twig s'apprend rapidement et la documentation* indique toutes les expressions nécessaires à la création d'un template. Le code étant logiquement très proche du PHP, passer de PHP à Twig s'effectue instantanément.
+* https://twig.symfony.com/doc/2.x/
+
+
+Twig adopte un système de blocs pour se structurer. En observant une page Twig, nous constatons rapidement qu'à l'exception de certaines pages (telles que base.html.twig), le code de nos pages Twig est inséré à l'intérieur de blocs à la syntaxe suivante:
+
+	{% block foo %}
+		...contenu du bloc...
+	{% endblock %}
+
+	{% block bar %}
+		...contenu du bloc...
+	{% endblock %}
+
+Comme nous pouvons le constater, la structure des accolades de ces blocs suit un schéma {% %}, ce qui indique une forme de structure de contrôle. Ces blocs sont conçus pour préparer un type d'héritage particulier de Twig.
+Par héritage, il faut entendre la récupération du code d'une page-mère au profit d'une page fille. La page Twig héritant récupère toute la structure de la page-mère avant de modifier (déterminer) le contenu des blocs présents dans cette page. Ainsi, il est impossible pour une page héritante de comprendre un code qui ne se trouve pas à l'intérieur d'un bloc délimité.
+
+Ainsi, il est donc possible (et recommandé) de rédiger toute la structure de base d'une page web dans une page dédiée, telle que base.html.twig, et de réserver un bloc à l'intérieur de notre page, pour la page Twig héritant. Ainsi, il suffira pour la page Twig (que nous allons indiquer dans notre controller) d'hériter de base.html.twig pour que le layout de base soit automatiquement recopié tandis que notre template héritant sera aussi bref que possible.
+
+ATTENTION: Le contenu d'un bloc hérité n'affiche pas les valeurs saisies à l'intérieur du parent à moins que le développeur n'en exprime le désir. Afin de pouvoir récupérer le contenu d'un bloc twig du fichier mère, il est nécessaire de faire à la fonction
+	{{ parent() }}
+Cette fonction récupère les instruction présentes à l'intérieur du bloc du fichier parent et le recopie à l'emplacement de la fonction.
+
+*****
+
+A propos de certaines fonctionnalités Twig
+
+Les Filtres
+
+Les filtres sont placés après une barre/pipe (AltGr+6 -> |), dans une balise Twig à double accolade. Leur fonction est de transformer la valeur inscrite dans la double accolade en question.
+
+	{{ value|upper }} -> Transforme la chaine de caractères présente dans value en mettant chaque lettre en majuscule.
+	{{ text|nl2br }} -> Remplace les newline (/nl) utilisées dans la base de données en retour à la ligne de type HTML (<br>)
+
+Les filtres sont très utiles pour pouvoir modifier une valeur transmise via le Controller et l'adapter à l'interface présentée à l'utilisateur.
+
+Les Fonctions
+
+Les fonctions possèdent une logique semblables aux filtres mais possèdent une syntaxe plus classique. La fonction, en comparaison au filtre, une action plus radicale en ce qu'elle transforme la valeur ou le tableau présenté à une fin autre qu'un affichage plus aisé.
+	{{ max([1, 2, 3]) }} -> Retourne la valeur la plus élevée (les autres valeurs sont donc perdues)
+	{{ dump(value) }} -> Dump affiche le contenue d'une valeur avec quantité de détails et est très importante dans le processus de debug
+
+Les Tests
+
+Les test sont des entrées spéciales, dans des balises à double accolade, ayant pour but de vérifier l'exactitude d'une affirmation. Ils sont reconnus par l'usage du mot-clef "is"
+	{% if foo is empty %} -> empty: vérifie si la variable concernée est vide, rend true dans ce cas ({% %} est utilisé en raison de la structure de contrôle if)
+	{{ bar is even }} -> even: retourne True si "bar" est un nombre pair
+
+
+Une fonction Twig particulière: path()
+
+	{{ path('route_foo') }}
+La fonction path() est une fonction vitale au bon fonctionnement de notre application: son rôle est de générer un lien hypertexte vers une autre route de notre site web, selon le nom de la route qui a été rédigé dans les annotations de la fonction désignée.
+Le second paramètre/argument est un tableau qui permet de transmettre des paramètres pour le bon fonctionnement et la transmission de valeurs supplémentaires pour les fonctions possédant des segments optionnels. Ici, la syntaxe Twig pour un tableau est légèrement différente d'une syntaxe PHP classique. En PHP, nous créons un tableau de la manière suivante:
+	['name' => 'path']
+Nous créons notre tableau de la manière suivante sur Twig:
+	{{ path('route_foo', {'name' : 'path'}) }}
+Notre fonction path() rédigée ainsi récupèrera la valeur indiquée pour la clef 'name' et remplacera le segment correspondant par ladite valeur.
+
+
+L'Inclusion de Vue
+
+L'Inclusion est une fonction à la fois inverse et complémentaire à l'héritage. Inversement à Extends, qui publie la page Twig à l'intérieur de la page héritée, Include inclut une page Twig à l'intérieur de la page faisant appel à la fonction. Ainsi, Include fonctionne comme les fonctions PHP include() ou require()
+	{% include 'layout/header.html.twig' %}
+
+Le contenu de la page header.html.twig sera automatiquement ajouté à l'emplacement de l'instruction Include.
+
+
+L'Incorporation des Elements du Dossier Public via la fonction asset()
+
+Afin de pouvoir ajouter un élément nécessaire au bon fonctionnement du site et qui doit être directement accessible via une requête client, Twig possède une fonction asset() qui est un lien direct vers le contenu du dossier 'public'.
+	{{ asset('assets/css/stylesheet.css') }}
+Rédigé ainsi, ce bloc génèrera automatiquement un lien en partant du dossier public et qui pointera vers la ressource indiquée, ici, le fichier stylesheet.css, rangé dans le dossier css, dans le dossier assets.
+Ainsi, la fonction asset de Twig est indispensable pour pouvoir afficher les ressources du dossier public tels que les images, les fichiers CSS ou encore JavaScript.

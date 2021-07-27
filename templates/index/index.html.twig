@@ -1,0 +1,39 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Index -
+	{{ parent() }}
+{% endblock %}
+
+{% block stylesheets %}
+	{{ parent() }}
+	<link rel="stylesheet" href="{{ asset('assets/css/style.css') }}">
+{% endblock %}
+
+{% block body %}
+	<div class="example-wrapper">
+		<h1>Hello
+			{{ controller_name|upper }}! ✅</h1>
+
+		{# {% if (tableau is defined) %}
+								{{ dump(tableau)}}
+								{% endif %} #}
+
+		<p>Ceci est un
+			<a href="{{ path('square') }}">lien</a>
+			vers votre carré</p>
+
+		This amical message is coming from:
+		<ul>
+			<li>Your controller at
+				<code>
+					<a href="{{ 'C:/xampp/htdocs/SymfonyBlog/src/Controller/IndexController.php'|file_link(0) }}">src/Controller/IndexController.php</a>
+				</code>
+			</li>
+			<li>Your template at
+				<code>
+					<a href="{{ 'C:/xampp/htdocs/SymfonyBlog/templates/index/index.html.twig'|file_link(0) }}">templates/index/index.html.twig</a>
+				</code>
+			</li>
+		</ul>
+	</div>
+{% endblock %}
