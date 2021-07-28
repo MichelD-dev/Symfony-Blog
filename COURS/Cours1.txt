@@ -1,0 +1,139 @@
+Support de cours Symfony
+
+
+- Installer Composer et télécharger composer.phar
+- Installer Symfony
+- Installer notre projet Symfony
+
+https://getcomposer.org
+
+symfony new --full SymfonyBlog
+Composer-setup.exe
+Si l'installer vous demande l'installation automatique du PATH, répondre oui
+
+ATTENTION: Il ne faut pas oublier de relancer votre terminal dans le cas où vous avez installé Symfony ou Composer après l'avoir lancé. Si le terminal n'est pas réinitialisé, il ne sera capable de trouver le PATH de l'application requise.
+
+Afin de savoir si Symfony et le PATH est bien installé sur notre ordinateur, il suffit de taper dans notre invite de commande la commande suivante:
+	symfony -v
+Dans le cas d'une installation réussie, la version actuelle de Symfony ainsi que la liste des commandes disponibles pour l'application devrait être présentée.
+
+
+Dans le cadre de notre utilisation du framework Symfony, nous allons utiliser WAMP afin de gérer le serveur SQL mais nous allons utiliser un serveur local spécial pour notre site web, fourni par Symfony CLI que nous avons installé au préalable. Il nous suffit, pour lancer ce serveur local, de taper dans notre terminal la commande suivante:
+	symfony server:start -d
+Le -d permet de lancer le serveur en arrière-plan, et ainsi de pouvoir continuer à utiliser notre terminal.
+Il ne faut pas oublier de placer notre terminal dans le répertoire de notre projet avant de taper cette commande.
+Il vous suffira alors d'entrer l'URL 127.0.0.1:8000 pour accéder à votre application web.
+
+---
+Symfony
+La structure théorique du framework Symfony
+
+Lorsque nous développons une application en utilisant notre framework, nous allons utiliser une architecture particulière, qui est nommée MVC, pour Model-View-Controller (Modèle, Vue, Contrôleur). Les trois composants de cet acronyme sont trois Patrons de Conceptions (Design Patterns), qui sont associés pour fournir la logique de base de notre application.
+
+Qu'est-ce qu'un Design Pattern?
+Un Design Pattern/Patron de Conception est un arrangement caractéristique de modules, reconnue comme bonne pratique en réponse à un problème de conception de logiciel. Le Design Pattern décrit une solution standard, utilisable dans la conception de différents logiciels. C'est un formalisme conçu pour répondre à des problèmes particuliers avec une méthode prédéfinie.
+
+La structure de Symfony est donc basée sur un paradigme Model-View-Controller, ou MVC. La structure MVC est un ensemble de Design Patterns très utilisée dans le cadre des applications possédant une interface graphique et nécessitant une interaction de la part de l'utilisateur. Chaque élément de ce paradigme joue un rôle particulier:
+	Le Contrôleur regroupe tous les programmes PHP nécessaires au bon fonctionnement de l'application. Le Controller n'est seulement la classe PHP Controller appelée ou la fonction correspondant à la route que nous avons requise, mais désigne le processus entier d'appel aux différentes bibliothèques et aux différents services nécessaires au bon traitement des données, c'est également le Contrôleur qui se chargera d'appeler les Modèles nécessaires dans le cadre de la requête Client, et qui déterminera quelles sont les fichiers de Vue nécessaires pour générer la page web à envoyer en résultat final. En bref, le Contrôleur est le coeur de notre application.
+	
+	Le Modèle (ou les Modèles) regroupe(nt) toutes les données employées par notre application. Il s'agit des données persistantes, telles que celles enregistrées dans notre base de données, mais pas seulement. Tout ce qui est information propre à être traitée par notre application et à être envoyée au client est Modèle: il peut s'agir des informations stockées dans la base de données, mais également dans des fichiers .xml annexes, des fichiers textes, ou encore des images. Les Modèles sont donc la matière de l'application, celle que l'organisation du Controller a pour but d'ordonner et de distribuer de manière harmonieuse. Dans notre cas, nous allons avant tout nous intéresser à la partie du Model qui est stockée dans notre base de données. Pour cela, nous allons utiliser la bibliothèque Doctrine, qui est le gestrionnaire de base de données par défaut de Symfony. Dans notre application, Doctrine se chargera d'administrer nos Models sous forme d'Entité (Entity), dont les informations seront traitées et récupérées via des classes spéciales nommées les Repository. Le Repository est une classe spécialisée, possédant plusieurs fonctions dont le but est la récupération d'informations précises contenues par les Entités, informations qui seront ensuite transmises au Contrôleur pour leur traitement.
+
+	La Vue regroupe tous les fichiers nécessaires à la génération de notre page web à retourner en réponse à la requête client. Si le Model contient la matière de notre application Symfony et que le Contrôleur s'occupe de son organisation, le but de la Vue est de présenter cette information de manière efficace et intelligible via une interface graphique. La Vue est idéalement composée de plusieurs fichiers regroupés dans le dossier Templates, offrant les templates/gabarits nécessaires pour expliciter et contextualiser les informations du Modèle récupéré sous décision du Contrôleur. Le code PHP est laissé aussi minimal que possible dans ces fichiers de vue, dans l'idéal de séparation des rôles. Dans notre cas, nous allons utiliser un langage dit de template, Twig, qui a pour but de simplifier la maigre part de PHP de la partie vue et de la rendre aussi facile à lire et à comprendre que possible.
+    
+-----
+
+La structure et l'arborescence de notre application Symfony
+
+Notre application est divisée en plusieurs sous-dossiers, chacun prenant en charge un aspect du fonctionnement de l'application entière. De plus, il existe d'autres fichiers posés à la racine-même de notre application. Les autres sont, dans le cadre d'une installation simple, les dossiers bin, config, migrations, public, src (avec trois sous-dossiers qui sont controller, entity, et repository), templates, tests, translations, var, et vendor.
+
+A la source de notre dossier, nous trouvons plusieurs fichiers tels que .en, composer.json, composer.lock, ou encore symfony.lock. La plupart de ces fichiers ont pour but de gérer l'aspect mise à jour et gestion des bibliothèques de notre projet Symfony. Les .json et les .lock indiquent à l'application la version des bibliothèques installées et désirées.
+Le fichier .env est un fichier spécial, remplissant un rôle précis: il s'agit d'un fichier de configuration lequel permet d'initialisation des variables d'environnement de notre application qui seront utilisées entre autres par les fichiers de configuration situés dans le dossier config. Un autre aspect important de notre fichier .env est sa capacité à changer le mode de notre site (lui permettant de passer d'un mode développement à un déploiement en production) via la variable APP_ENV, qui définit l'état de notre site. Enfin, le fichier .env permet également de configurer la connexion à notre base de données, en spécifiant notre type de Système de Gestion de Base De Données (SGBDD), ainsi que les différents réglages nécessaires à la connexion.
+
+Le dossier bin contient deux fichiers, console et phpunit. Ce dossier sert à permettre l'exécution de commandes via le terminal.
+
+Le dossier config contient les différents fichiers de configuration nécessaires à la personnalisation et aux réglages de Symfony. On peut y régler la manière dont sont administrées les routes, la sécurité, les services, les bibliothèques Doctrine ou Twig, et d'autres choses encore.
+
+Le dossier migrations est lié à Doctrine, et se compose de classes PHP renfermant les instructions SQL nécessaires pour effectuer chaque migration
+
+Le dossier public est le seul dossier accessible aux requêtes client. Il contient les différents fichiers non générés pouvant être chargés sur le navigateur de l'utilisateur. Les fichiers présents dans le dossier public sont donc transmis tels quels au client. On y trouve les fichiers CSS, les fichiers JavaScript, ou encore les images et autre fichiers média. On y trouve aussi le fichier index.php qui est le point d'entrée de notre application et qui lance toute la structure Symfony lorsqu'accédé par la requête client.
+
+Le dossier src contient trois sous-dossiers et via ces derniers, deux des éléments-coeur de notre application: les Controllers et les Models.
+Le dossier Controller possède toutes les classes de type Controller. Il est possible de créer un unique fichier Controller ressemblant toutes les fonctions Controller employées par notre application, mais pour des raisons d'ergonomie et d'efficacité, on préfèrera séparer nos Controllers en plusieurs classes selon le thème et la fonction des fonctions en question. Par exemple, IndexController.php peut être créé pour gérer toutes les routes liées à l'aspect de notre site web, tandis que AdminController peut être créé pour gérer au contraire tous les aspects de la gestion de notre site via un backoffice réservé aux utilisateurs possédants un privilège de type administrateur.
+
+Les dossiers Entity et Repository sont liés et sont deux dossiers accessoires à l'ORM Doctrine, chargé de la gestion de notre base de données. Le dossier Entity possède plusieurs classes PHP nommées Entités (Entities), dont la fonction est de représenter les différents objets issus de l'aspect Model de notre application, prêts à être utilisés par cette dernière. Doctrine, en tant qu'ORM (Object-Relational Mapping), se charge alors de traduire ces objets définis par les classes Entity en entrées MySQL classiques, sous forme de tables relationnelles. La récupération de données précises à partir de ces tables nécessite une intervention supplémentaire de la part du programmeur, et c'est ici que les classes de type Repository entrent en jeu. Classées dans le dossier Repository, les classes de type Repository sont liées à un Entity correspondante et définissent les différentes requête DQL (Doctrine Query Language), que Doctrine traduira en SQL (Structured Query Language) afin d'interroger la base de données. Ainsi, les dossiers Entity et Repository possèdent les classes nécessaires à l'emploi de Doctrine (à l'emploi, et non au fonctionnement).
+
+Le dossier Templates contient les différents fichiers écrits selon le langage de template Twig, dont le but est de servir de base pour générer des pages web à envoyer au client.
+
+Le dossier Test est un autre dossier lié aux configurations des bibliothèques de Symfony.
+
+Le dossier Translations, comme son nom l'indique, est dédié aux potentielles traductions, options de langue, que peut prendre en charge notre site.
+
+Le dossier Var contient deux sous-dossiers, cache et logs. Logs contient différentes informations sur le fonctionnement de notre application qui sont susceptibles d'être utiles en cas de test ou de debug. Le dossier cache contient des fichiers temporaires générés par l'application afin d'accélerer son fonctionnement. En cas de mise à jour de notre site, il est recommandé de vider le cache afin de pouvoir générer de nouveaux fichiers temporaires à jour des changements récents. Le cache peut être manuellement supprimé ou vidé via une commande de notre terminal:
+	php bin/console cache:clear
+
+Le dossier Vendor contient toutes les bibliothèques utilisées par Symfony. Il est généré par Composer et est mis à jour par ce dernier dès qu'une bibliothèque est ajoutée ou mise à jour. Par convention, dans une application, le dossier Vendor doit contenir toutes les bibliothèques extérieures à l'application. Il s'agit d'une convention généralisée et le dossier Vendor n'est pas exclusif à Symfony. Il ne faut pas chercher à modifier les fichiers situés à l'intérieur de ce dossier étant donné que ces fichiers seront automatiquement écrasés ou effacés à chaque mise à jour de notre application.
+
+
+-----
+Logique de base de notre application Symfony
+
+Dans le cadre de notre application web, le fonctionnement est basé sur un échange répété de requête et de réponse.
+Un accès à une application web se fait via une requête HTTP, qui contient plusieurs informations tel que le nom de du site, et d'autres paramètres passés non seulement par la barre d'adresse mais pas forcément. La requête HTTP la plus simple comportera des informations annexes telles que la version de notre navigateur, notre adresse IP, notre système d'exploitation, etc. Aussi, les requêtes que nous envoyons peuvent être plus complexes: par exemple, les formulaires de type POST. Un formulaire de type POST contient des informations passées via requête HTTP: elles ne sont cependant pas visibles dans la barre d'adresse.
+Suite à cette requête, le serveur rend une réponse, basée sur la même syntaxe HTTP. Dans le cas de Symfony, deux bibliothèques particulières ont été développées pour gérer les requêtes et les réponses.
+Il s'agit des classes Symfony Request et Response.
+
+La classe Response
+
+La classe Response, dans notre application Symfony, crée un objet particulier: cet objet sera la réponse envoyée par notre application pour répondre à la requête client.
+Afin de pouvoir utiliser l'objet Response dans notre controller, il faut toujours être qu'il soit mentionné dans les Use en début de page. En l'espèce:
+	use Symfony\Component\HttpFoundation\Response;
+Dans le cadre de la première page web générée par Symfony lors de la création d'un nouveau controller, la fonction par défaut mentionne le fait qu'elle retourne un objet de type Response, mais le contenu de l'instruction mentionne une fonction qui est "render".
+	return $this->render($url, array($args));
+Ici, la fonction render(), appelée depuis notre controller (ce que nous pouvons constater du fait de la variable $this, qui indique une fonction contenue par la classe, ici utilisée par le controller instancié*), génère automatiquement un objet de type Response très complexe, qui prendre plusieurs paramètres. Le premier paramètre est un lien vers un template qui servira de base pour générer la page web. Le second paramètre est un tableau associatif (aussi dit dictionnaire dans d'autres langages informatiques), qui contient des options à tranmettre à l'application en charge de générer les templates, qui dans le cas de Symfony, est Twig.
+*instancié: sous forme d'objet. Un objet est le produit d'une classe, et est dit instancié par la classe. Nous parlons également d'instance de classe pour parler d'un objet.
+
+Ici, cette réponse, ou cet objet instancié par la classe Response, est si complexe qu'il demande une autre application (Twig) pour le créer et le gérer. Mais nous pouvons envoyer des types de réponse/response beaucoup plus simples, sous la forme d'un tableau JSON par exemple, ou même une simple chaine de caractères.
+Nous pouvons créer une instance de Response beaucoup plus simple en retournant le nouvel objet et en l'instanciant à la même occasion:
+	return new Response($string, Response::HTTP_OK, ['content-type' => 'text/html'])
+HTTP_OK est une constante de valeur 200. En HTTP, il s'agit d'un code indiquant que la requête a abouti sans erreur. Utiliser cette constante permet d'avoir un repère efficace, contextualisé et facile à lire pour un humain.
+[La liste des différents codes HTTP est accessible sur wikipédia: à la page https://fr.wikipedia.org/wiki/Liste_des_codes_HTTP]
+Une Response de type text est un moyen idéal d'obtenir, en debug, la valeur d'une variable donnée ou de s'assurer qu'une fonction tourne bien comme prévu, en utilisant l'instruction return comme point de sortie temporaire d'une fonction pour vérifier son comportement. Elle reste cependant de part sa nature très basique peu accueillante pour le client, et est donc un type d'instance à réserver dans le cadre du développement de l'application.
+
+Il existe d'autres types de Response, tels que JsonResponse
+	use Symfony\Component\HttpFoundation\JsonResponse;
+Qui lui rendra une réponse sous forme de tableau associatif. En bref, Symfony peut rendre plusieurs types de Response, qu'il s'agisse d'un texte simple, d'un fichier JSON, ou encore d'une page web complète générée via l'action de la bibliothèque associée Twig.
+Dans le cas de notre application, nous allons avant tout employer Twig pour développer notre site web.
+Il faut comprendre que malgré une nature identique, l'objet Response créé au moment du return et celui obtenu à partir de la fonction render() sont différents. La web générée ne l'est qu'à la suite d'un long processus géré par une application externe (Twig), qui renvoie le résultat à la classe Response de Symfony. Il s'agit bel et bien d'une Response, mais bien plus longue et complexe en ce qui concerne son contenu.
+La base de la classe Response serait donc nécessaire pour l'utilisateur qui ne désire pas utiliser Twig et souhaiterait utiliser par exemple sa propre bibliothèque de template.
+
+
+La classe Request
+
+A l'instar de la classe Response, la classe Request génère un objet qui, cette fois-ci, servira à traiter de manière plus efficace la requête utilisateur. Comme dit plus haut, toute communication de l'utilisateur avec un site web est une requête. La partie client passe une requête via différents paramètres à une partie serveur, qui prend en compte la requête dans son entièreté, l'accepte ou la refuse, et en cas d'acceptation, renvoie un fichier ou une page web générée au préalable.
+Les éléments de la requêtes contiennent des éléments plus "évidents", tels que l'URL de la page que nous désirons visiter, mais d'autres éléments plus subtils tels que l'adresse IP, le type de navigateur, le système d'exploitation, etc. Une requête contient également d'autres éléments optionnels tels que les données d'un formulaire que le client envoie à la partie serveur.
+Dans le cadre de Symfony, la gestion de tous ces éléments de la requête client sont pris en charge par l'objet instancié par la classe Request. Pour cela, il faut tout d'abord s'assurer que la classe Request soit bel et bien mentionnée dans les "use" du Controller:
+	use Symfony\Component\HttpFoundation\Request;
+
+Il faut ensuite ajouter un objet Request dans les paramètres/arguments de notre fonction.
+	public function index(Request $request)
+Une fois que ceci est fait, l'objet de la classe Request est automatiquement instancié par Symfony et devient utilisable dans notre fonction.
+L'objet Request nous permet d'accéder facilement aux différentes informations transmises via la requête client et donc de les traiter de manière plus efficace. Entre autres, dans le cadre de Symfony, l'objet $request devient notre pont d'accès aux variables dites superglobales. Par exemple, afin d'accéder aux variables contenues par la superglobale $_GET, il faudra utiliser l'objet $request et son "parameter bag" query. Par exemple, dans le cas d'une adresse web telle que:
+	http://monsiteweb.com/index?data=foobar
+Au lieu d'utiliser $_GET['data'], nous devrons employer $request tel que:
+
+	public function index(Request $request){
+		$data = $request->query->get('data'); Nous récupérons le contenu de type GET via la fonction query de notre objet $request et nous le plaçons à l'intérieur de la variable $data
+		return new Response($data); // Nous affichons le contenu de $data en Response
+	}
+
+Dans le cas de GET, il est possible de récupérer toutes les valeurs de la superglobales en utilisant la fonction all().
+	$dataAll = $request->query->all(); // Nous récupérons toute la superglobale $_GET
+
+De même, afin d'accéder aux variables de la superglobales $_SESSION, il suffit d'écrire l'instruction suivante:
+	$session = $request->getSession();
+Ceci signifie donc que toute fonction désirant accéder directement aux variables de la session devra instancier l'objet $request.
+
+
+Les éléments Request et Response couvrent les deux piliers de la communication entre client et serveur. Ainsi, les deux éléments de HttpFoundation nous transmettent la base sur laquelle nous allons construire toute la logique de notre application Symfony de type Model-View-Controller, qui réceptionnera une REQUÊTE, la traitera, avant de renvoyer la REPONSE appropriée.
+
+-----

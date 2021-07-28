@@ -14,8 +14,18 @@ class IndexController extends AbstractController
     {
         // Peut executer plusieurs instructions avant de renvoyer une réponse via le return
         return $this->render('index/index.html.twig', [
-            'controller_name' => 'IndexController',
+            'controller_name' => [
+                1 => 'Michel',
+                2 => 'Julie',
+                3 => 'Matthieu'
+            ]
         ]);
+    }
+
+    #[Route('/cheatsheet', name: 'index_cheatsheet')]
+    public function cheatsheet(): Response
+    {
+        return $this->render('index/cheatsheet.html.twig');
     }
 
     #[Route('/square/{response}', name: 'square')]
@@ -47,11 +57,11 @@ class IndexController extends AbstractController
         return new Response(
             "<div style='display: flex; justify-content: space-evenly; margin-top: 10%'>
             <div>
-            <h1>This really is quite a {$colors[$i]} {$response}!</h1>
+            <h1>This really is quite a <span style='color: {$colors[$i]}'>{$colors[$i]}</span> {$response}!</h1>
             <div style='width: 300px; height: 300px; border-radius: {$br}%; background-color: {$colors[$i]};'></div>
             </div>
             <div>
-            <h1>This one is more {$colors[$i2]}-ish...</h1>
+            <h1>This one is more <span style='color: {$colors[$i2]}'>{$colors[$i2]}</span>-ish...</h1>
             <div style='width: 300px; height: 300px; border-radius: {$br}%; background-color: {$colors[$i2]};'></div>
             </div>
             </div>"

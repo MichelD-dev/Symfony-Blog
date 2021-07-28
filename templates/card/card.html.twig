@@ -1,0 +1,43 @@
+{% block card %}
+	<div class="example-wrapper border p-4 rounded shadow-sm d-flex">
+		<div>
+			<h1 class="display-6 mb-4 pb-2">Welcome
+				<span {#style='color:<?php printf( "#%06X\n", mt_rand( 0, 0x222222 )); ?>' #} class="text-black-50">{{ name|upper }}</span>!
+				<span class="text-success">✅</span>
+			</h1>
+
+			{# {% if (tableau is defined) %}
+																													{{ dump(tableau)}}
+																													{% endif %} #}
+
+			<p>Ceci est un
+				<a href="{{ path('square') }}">lien</a>
+				vers votre carré.</p>
+
+			This amical message is coming from:
+			<ul>
+				<li>Your controller at
+					<code>
+						<a href="{{ 'C:/xampp/htdocs/SymfonyBlog/src/Controller/IndexController.php'|file_link(0) }}">src/Controller/IndexController.php</a>
+					</code>
+				</li>
+				<li>Your template at
+					<code>
+						<a href="{{ 'C:/xampp/htdocs/SymfonyBlog/templates/index/index.html.twig'|file_link(0) }}">templates/index/index.html.twig</a>
+					</code>
+				</li>
+			</ul>
+		</div>
+		<div class="pb-0 d-flex flex-column">
+			<div>
+				<img style="width: 200px; height:'auto'" src="{{ asset('assets/img/profile-picture.png') }}" alt="profile picture" class="img-thumbnail ms-3 mt-2">
+			</div>
+			<div class="d-flex justify-content-center text-black-50 fs-4 mt-3 ms-3">
+				<i class="bi bi-linkedin mx-2"></i>
+				<i class="bi bi-facebook mx-2"></i>
+				<i class="bi bi-instagram mx-2"></i>
+				<i class="bi bi-twitter mx-2"></i>
+			</div>
+		</div>
+	</div>
+{% endblock %}

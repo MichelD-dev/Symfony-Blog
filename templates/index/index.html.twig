@@ -6,34 +6,16 @@
 
 {% block stylesheets %}
 	{{ parent() }}
+	<br/>
 	<link rel="stylesheet" href="{{ asset('assets/css/style.css') }}">
+	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.5.0/font/bootstrap-icons.css">
 {% endblock %}
 
 {% block body %}
-	<div class="example-wrapper">
-		<h1>Hello
-			{{ controller_name|upper }}! ✅</h1>
+	{# <p class="display-6 pt-4 pb-0 text-muted">Nombre de membres :
+		{{ controller_name|length }}</p>
 
-		{# {% if (tableau is defined) %}
-								{{ dump(tableau)}}
-								{% endif %} #}
-
-		<p>Ceci est un
-			<a href="{{ path('square') }}">lien</a>
-			vers votre carré</p>
-
-		This amical message is coming from:
-		<ul>
-			<li>Your controller at
-				<code>
-					<a href="{{ 'C:/xampp/htdocs/SymfonyBlog/src/Controller/IndexController.php'|file_link(0) }}">src/Controller/IndexController.php</a>
-				</code>
-			</li>
-			<li>Your template at
-				<code>
-					<a href="{{ 'C:/xampp/htdocs/SymfonyBlog/templates/index/index.html.twig'|file_link(0) }}">templates/index/index.html.twig</a>
-				</code>
-			</li>
-		</ul>
-	</div>
+	{% for name in controller_name %}
+		{% include "card/card.html.twig"  %}
+	{% endfor %} #}
 {% endblock %}
