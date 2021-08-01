@@ -1,0 +1,64 @@
+*****
+
+L'aspect Model de notre application
+
+Comme noté plus haut, l'élément Model d'une application comporte toutes les données sur laquelle notre application va travailler. Cela comporte, mais pas seulement, les informations de notre base de données. Dans le cadre de ce cours cependant, seul cet aspect sera abordé (par exemple, nous ne nous intéresserons pas aux apports des fichiers XML ou JSON).
+
+La base de données est une structure où nous classons des données prêtes à être rapidement extraites et utilisées de manière sécurisée pour le fonctionnement de notre application. Les données elles-même sont classées dans des tables, qui réunies composent notre base de données.
+
+Les bases de donnés fonctionnent selon différentes structures: on parle de Système de Gestion de Base de Données, ou SGBDD. On peut y compter MySQL, Oracle, PostGreSQL, MariaDB, etc. Dans notre cas, nous utiliserons MySQL.
+
+De manière classique, l'échange entre notre application et notre base de données s'effectue via le langage SQL (Structured Query Language). C'est avant tout le cas en PHP classique, où nous utilisons le module PDO pour envoyer des instructions à notre SGBDD en utilisant ce language, via des instructions telles que :
+	SELECT nom, annee, FROM eleve;
+
+Cependant, nous n'allons pas utiliser de SQL classique avec Symfony. Symfony emploie une bibliothèque particulière qui est Doctrine. Doctrine est, comme Twig, indépendant de Symfony. C'est ce qu'on appelle un ORM (Object-Relational Mapping).
+
+Les ORM, comme leur nom l'indique, sont des applications qui servent d'intermédiaire entre les structures de base de données relationnelles et les structures orienté objet. Ici, Doctrine fera en sorte que nous n'ayons pas à écrire nous-même notre code SQL et à réfléchir à traduire le fonctionnement classique de Symfony en une structure relationnelle classique. Doctrine interprétera le code de notre application et génèrera une série d'instructions SQL adaptées pour le traduire de manière efficace. Ce processus étant automatisé, nous n'avons à nous en soucier. Ce qui nous intéresse est l'utilisation efficace de Doctrine et l'établissement correcte d'une structure Model selon les règles de Symfony, via les Entités (Entity).
+
+La première étape dans la configuration de Doctrine, si la bibliothèque est déjà installée (elle l'est par défaut dans l'installation de base de Symfony), est la modification du fichier .env à la racine afin d'incorporer notre type de SGBDD, notre adresse et port de connexion, identifiant, et mot de passe. Une fois que cette étape est conclue, nous créons notre nouvelle base de données compatible Doctrine avec la commande suivante:
+	php bin/console doctrine:database:create
+
+Si tout se passe sans erreur, nous avons donc ici notre première base de données, à laquelle Doctrine peut accéder et interagir à loisir. Nous pouvons donc commencer à nous intéresser à l'élément fondamental de l'aspect Model de Symfony et Doctrine, qui est l'Entity.
+
+Une Entity est une classe PHP au sein de Symfony qui définit une Entité possédant plusieurs caractéristiques (à travers des attributs) et qui sera une unité de base dans la gestion des Models de notre application. En pratique, une classe Entity sera convertie en table par Doctrine, et chaque élément conçu à partir de cette Entity sera une entrée de cette table. En d'autres termes, une Entity est une classe PHP convertie en table par Doctrine, tandis que ses instances de classe (donc les objets conçus à partir de cette classe Entity et que nous conserver) seront converties en entrées de cette nouvelle table SQL.
+
+Les Entities peuvent être générées à partir d'une commande via notre terminal. Cette méthode est recommandée afin de ne pas provoquer d'erreurs de syntaxe ou d'oubli:
+	php bin/console make:entity
+Plusieurs questions seront alors posées via le terminal afin de pouvoir définir de manière complète notre Entity, avant de la générer automatiquement, par la création de deux classes PHP, une classe Entity et une classe Repository.
+
+Le maker ne fait que créer les classes Entity pour notre application. Il ne se charge pas de les transmettre à notre base de données. Pour cela, il faudra demander à Doctrine d'analyser nos classes et de générer une série de commandes SQL pour les traduire en tables relationnelles classiques. Pour cela, nous devons utiliser une procédure que nous appelons la migration.
+
+Comme son nom l'indique, la migration est la transmission de notre classe vers la base de données: il s'agit d'un déplacement d'un concept (Orienté Objet) à un autre (Données Relationnelles). La classe Migration est une classe PHP ayant pour fonction de gérer ce processus. Elle est automatiquement préparée par Doctrine via la commande suivante:
+	php bin/console make:migration
+
+Créer la classe ne suffit cependant pas à appliquer son contenu. Il faudra ensuite signifier à Doctrine d'appliquer les instructions générées par la classe via une seconde commande:
+	php bin/console doctrine:migrations:migrate
+
+Le fichier migration généré obtient un numéro de version basé sur l'heure de sa création. Il possède trois fonctions, une description, up(), et down(). Le but des fonctions up() et down() est de faire exécuter une série d'instructions SQL par Doctrine. La fonction up() permet d'effectuer la migration du composant Model de notre application Symfony vers la base de données, tandis que les instructions de down() permettent d'annuler cette modification.
+Etant donné qu'à chaque nouvelle migration, une nouvelle classe est créée possédant les nouvelles instructions à transmettre, il est possible, via les méthodes up() et down(), de mettre à jour comme de revenir à des versions antérieures de notre base de données.
+
+La gestion de notre table est entièrement prise en charge par Doctrine: ce n'est pas à nous de nous en occuper. Ce qui nous intéresse est la gestion des Entity. Nous faisons appel à Doctrine pour récupérer des informations dont nous avons besoin pour récupérer des Entity que nous avons ajouté à notre base de données, et nous laissons à Doctrine le travail de manipuler ces données pour générer un objet Entity qui nous sera rendu.
+Le nom des entrées de la table, des types choisis par Doctrine, ne nous concerne pas et il ne faut pas essayer d'apporter des changements manuels à notre table sous risque de provoquer des erreurs à moyen et long terme.
+
+Ainsi, si nous souhaitons ajouter des informations à notre base de données, nous allons devoir passer par Symfony, créer des instances d'objet basées sur les Entity que nous avons conçu, et demander à Doctrine d'effectuer le transfert de ces objets vers la base de données.
+
+Dans le cas d'une application Symfony dont le développement vient de commencer, les outils mis en place peuvent être limités pour le développeur: s'il désire tester ses bases de données sans avoir conçu de fonctions ou de formulaires permettant la mise en ligne rapide d'Entities, il peut cependant employer un autre moyen qui lui permettra de remplir sa base de données avec des informations temporaires. Il s'agit des fixtures.
+
+Les fixtures sont des entrées temporaires visant à tester le fonctionnement de notre base de données. Ces "fausses informations", qui n'ont pas été créées pour être conservées mais qui ont pour but de tester les capacités d'affichage et de gestion des informations par notre application, rempliront rapidement la base de données de notre application en période de développement.
+
+Nous devons installer le module de fixtures avant de pouvoir l'utiliser, via la commande suivante:
+	composer require --dev orm-fixtures
+
+Encore une fois, afin de pouvoir conserver nos données et ajouter de nouvelles entrées aux tables de notre base de données, nous ne devons pas suivre une logique basée sur les données relationnelles mais sur la logique Orienté Objet: nous devons créer une Entity, la définir, et indiquer à Doctrine que nous souhaitons la conservre au sein de notre base de données.
+
+Les quatre étapes de la persistances des données en Symfony:
+	-> La création de la nouvelle insance de notre Entity via "new"
+	-> Nous définissons notre instance d'Entity via le constructeur/setters
+	-> Nous indiquons à Doctrine que nous souhaitons que cette instance soit conservée (persiste dans son existence) via la fonction persist()
+	-> Nous indiquons à Doctrine d'appliquer toutes les opérations que nous avons requises via la fonction flush()
+
+Dans le cadre de nos fixtures, la fonction load(), qui sera automatiquement appelée pour chaque classe de fixture présente, possède dans sa structure trois de ces quatre éléments. Le second, la définition de notre instance par ses setters (ou via le constructeur), est une procédure que nous allons devoir définir par nous-mêmes. Une fois plusieurs exemples de fausses données entrées, nous allons utiliser la commande:
+	php bin/console doctrine:fixtures:load
+
+Cette commande charge la fonction load() de chaque classe de Fixtures, ce qui appliquera les différentes requêtes de persistance de données que nous aurons indiqué via le code de ces classes. A chaque chargement de fixtures, notre base de données sera purgée, mais étant donné que ces valeurs indiquées ne possèdent qu'un but de remplissage et que les classes Fixtures peuvent être laissées sans conséquence, nos fausses données seront à nouveau ajoutées autoamtiquement sauf intervention de notre part.
+Etant donné que lors du lancement en production de notre site, les fausses données devront être supprimées dans un souci de cohérence, la purge automatique de notre base de données n'est pas un problème.
