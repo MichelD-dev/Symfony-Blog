@@ -2,23 +2,28 @@
 
 namespace App\Controller;
 
+use App\Entity\Bulletin;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
 class IndexController extends AbstractController
 {
     #[Route('/', name: 'index')]
     public function index(): Response
     {
-        // Peut executer plusieurs instructions avant de renvoyer une réponse via le return
+        //Afin de pouvoir dialoguer avec notre base de données, nous avons besoin de l'Entity Manager
+        $entityManager = $this->getDoctrine()->getManager();
+        //Nous récupérons le Repository de l'Entity qui nous intéresse, à savoir, Bulletin
+        $bulletinRepository = $entityManager->getRepository(Bulletin::class);
+        //Nous récupérons la totalité des entrées de la table Bulletin, sous forme d'un tableau d'instances de classe Bulletin
+        $bulletins = $bulletinRepository->findAll();
+        $bulletins = array_reverse($bulletins); //Nous utilisons PHP pour inverser l'ordre de notre tableau
+
+        //Nous envoyons notre bulletin tel quel à la page index.html.twig
         return $this->render('index/index.html.twig', [
-            'controller_name' => [
-                1 => 'Michel',
-                2 => 'Julie',
-                3 => 'Matthieu'
-            ]
+            'bulletins' => $bulletins,
         ]);
     }
 
@@ -28,10 +33,77 @@ class IndexController extends AbstractController
         return $this->render('index/cheatsheet.html.twig');
     }
 
+    #[Route('/bulletin/display/{bulletinId}', name: 'bulletin_display')]
+    public function bulletinDisplay(Request $request, $bulletinId = false)
+    {
+        //Cette fonction a pour but de n'afficher qu'un seul bulletin, dont l'id correspond au paramètre de route
+        //Tout d'abord, nous devons récupérer l'Entity Manager et le Repository nécessaire à notre recherche
+        $entityManager = $this->getDoctrine()->getManager();
+        $bulletinRepository = $entityManager->getRepository(Bulletin::class);
+        //bulletinRepository nous sera utile pour effectuer une recherche dans notre table SQL "bulletin"
+        $bulletin = $bulletinRepository->find($bulletinId);
+        //Soit l'ID existe, et un objet Bulletin est instancié avec les informations de l'entrée récupérée
+        //Soit l'ID n'existe pas, et $bulletin vaut null
+        //Si le bulletin n'est pas trouvé, nous mettons prématurément fin à notre fonction
+        if (!$bulletin) {
+            return $this->redirect($this->generateUrl('index'));
+        }
+        //Etant donné que notre page index.html.twig lit des tableaux de Bulletin, nous rangeons notre variable $bulletin dans un tableau. Il ne s'agira d'un tableau qu'à une seule entrée et donc un seul bulletin sera présenté à l'utilisateur
+        $bulletins = [$bulletin];
+        //A présent, il faut envoyer ce tableau vers notre page twig
+        return $this->render('index/index.html.twig', [
+            'bulletins' => $bulletins,
+        ]);
+    }
+
+    #[Route('/bulletin/delete/{bulletinId}', name: 'bulletin_delete')]
+    public function bulletinDelete(Request $request, $bulletinId = false)
+    {
+        //Cette fonction a pour but de supprimer un bulletin, dont l'id correspond au paramètre de route
+        //Tout d'abord, nous devons récupérer l'Entity Manager et le Repository nécessaire à notre recherche
+        $entityManager = $this->getDoctrine()->getManager();
+        $bulletinRepository = $entityManager->getRepository(Bulletin::class);
+        //bulletinRepository nous sera utile pour effectuer une recherche dans notre table SQL "bulletin"
+        $bulletin = $bulletinRepository->find($bulletinId);
+        //Soit l'ID existe, et un objet Bulletin est instancié avec les informations de l'entrée récupérée
+        //Soit l'ID n'existe pas, et $bulletin vaut null
+        //Si le bulletin n'est pas trouvé, nous mettons prématurément fin à notre fonction
+        if (!$bulletin) {
+            return $this->redirect($this->generateUrl('index'));
+        }
+        //Nous procédons à la suppression du bulletin
+        $entityManager->remove($bulletin);
+        $entityManager->flush();
+        //Nous retournons vers l'index
+        return $this->redirect($this->generateUrl('index'));
+    }
+
+    #[Route('/article-generate', name: 'article_generate')]
+    public function generateArticle()
+    {
+        //Cette fonction génère un article/bulletin avant de rediriger le serveur vers la fonction index()
+        //Tout d'abord, nous appelons l'Entity Manager dont nous allons avoir besoin plus tard
+        $entityManager = $this->getDoctrine()->getManager();
+        //Ensuite, nous initialisons les différentes listes de chaines de caractères utilisées par notre Bulletin
+        //Ces listes se composent de propositions de contenu afin de de préparer un Bulletin original
+        $bulletinCategories = ['General', 'Divers', 'Urgent'];
+        $bulletinTitles = ['Rouge', 'Bleu', 'Jaune', 'Vert', 'Noir', 'Blanc', 'Gris', 'Cyan', 'Rose', 'Magenta', 'Turquoise', 'Fuschia', 'Orange', 'Marron', 'Violet'];
+        //Nous créons et renseignons notre nouveau Bulletin
+        $bulletin = new Bulletin;
+        $bulletin->setTitle($bulletinTitles[rand(0, (count($bulletinTitles) - 1))] . ' #' . rand(1, 999));
+        $bulletin->setCategory($bulletinCategories[rand(0, (count($bulletinCategories) - 1))]);
+        $bulletin->setContent('Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.');
+        //Nous pouvons faire notre demande de persistance pour le Bulletin à présent qu'il est renseigné
+        $entityManager->persist($bulletin);
+        $entityManager->flush();
+        //Nous renvoyons à présent le serveur vers la fonction index() de notre Controller
+        return $this->redirect($this->generateUrl('index'));
+    }
+
     #[Route('/square/{response}', name: 'square')]
     public function squareResponse(Request $request, $response = "carré"): Response
     {
-        // La valeur par défaut "carré" fait en sorte que $Response possède toujjours une valeur. Ainsi, nous pouvons à présent accéder à notre fonction squareResponse même si nous ne marquons rien après "/square"
+        // La valeur par défaut "carré" fait en sorte que $Response possède toujours une valeur. Ainsi, nous pouvons à présent accéder à notre fonction squareResponse même si nous ne marquons rien après "/square"
         switch ($response) {
             case 'carré':
                 $response = 'square';
@@ -101,5 +173,52 @@ class IndexController extends AbstractController
         return new Response(
             "<div style='width: 300px; height: 300px; background-color: {$color};'></div>"
         );
+    }
+
+    /* Fonctions inutilisées
+ * 
+
+    /**
+     * @Route("/", name="index")
+     *
+    public function index(Request $request): Response
+    {
+        //Nous créons un tableau censé accueillir les bulletins que nous allons créer
+        $bulletins = [];
+        //Nous insérons nos instructions de création d'un bulletin à l'intérieur d'une boucle
+        //Pour chaque tour de la boucle, le nouveau bulletin instancié sera ajouté à notre tableau $bulletins
+        
+        for($i = 0; $i < 10; $i++){
+            //Nous créons un nouveau bulletin
+            $bulletin = new Bulletin;
+            //Nous pouvons obtenir la date de création du bulletin en récupérant son objet DateTime contenu par l'attribut $creationDate et l'afficher via un return si nous le désirons
+            //return new Response($bulletin->getCreationDate()->format('G:i:s'));
+            //A présent, nous allons renseigner les autres attributs (sauf id qui est automatiquement pris en charge par Doctrine)
+            $bulletin->setTitle('#0' . $i . ' Rouge');
+            $bulletin->setCategory('General');
+            $bulletin->setContent('Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.');
+            //array_push est une fonction PHP qui permet d'ajouter au tableau (1) la valeur (2)
+            array_push($bulletins, $bulletin);
+        }
+
+        
+        //Nous envoyons notre bulletin tel quel à la page index.html.twig
+        return $this->render('index/index.html.twig', [
+            'bulletins' => $bulletins,
+        ]);
+    }
+*/
+
+    #[Route('/cards', name: 'cards')]
+    public function cards(): Response
+    {
+        // Peut executer plusieurs instructions avant de renvoyer une réponse via le return
+        return $this->render('index/index.html.twig', [
+            'controller_name' => [
+                1 => 'Michel',
+                2 => 'Julie',
+                3 => 'Matthieu'
+            ]
+        ]);
     }
 }

@@ -9,7 +9,7 @@ use Doctrine\ORM\Mapping as ORM;
  * @ORM\Entity(repositoryClass=BulletinRepository::class)
  */
 class Bulletin
-{/*    #[Route('/cheatsheet', name: 'index_cheatsheet')] 
+{
     /**
      * @ORM\Id
      * @ORM\GeneratedValue
@@ -36,11 +36,25 @@ class Bulletin
      * @ORM\Column(type="datetime")
      */
     private $creationDate;
-
-    public function __construct()
-    {
+    
+    public function __construct() {
+        //Le constructeur est une méthode de notre classe appelée automatiquement dès la création d'un objet
         $this->creationDate = new \DateTime('now');
     }
+    
+    public function getStatus(){
+        switch($this->category){
+            case 'General':
+                return 'info';
+            case 'Urgent':
+                return 'danger';
+            case 'Divers':
+                return 'warning';
+            default:
+                return 'secondary';
+        }
+    }
+
     public function getId(): ?int
     {
         return $this->id;

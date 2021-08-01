@@ -12,6 +12,23 @@
 {% endblock %}
 
 {% block body %}
+<div style="max-width: 1000px; margin:auto;">
+    <h1 class="display-3" style="margin-bottom:100px;">Liste des bulletins SymfonyBlog</h1>
+    
+    <a href="{{ path('article_generate') }}"><button class="btn btn-danger" style="margin-bottom:10px;">Générer Article</button></a>
+    {# équivalent de foreach($bulletins as $bulletin) #}
+    {% for bulletin in bulletins %}
+        <div class="alert alert-{{ bulletin.status }}">
+          <h2 class="display-5">{{ bulletin.title }}</h2>
+          <p class="h2">{{ bulletin.category }}</p>
+          <p>{{ bulletin.content }}</p>
+          <p class="lead">Le {{ bulletin.creationDate|date('d/m à G:i:s', "Europe/Paris") }}</p>
+          <a href="{{ path('bulletin_display', {'bulletinId' : bulletin.id }) }}"><button class="btn btn-light">Afficher</button></a>
+          <a href="{{ path('bulletin_delete', {'bulletinId' : bulletin.id }) }}"><button class="btn btn-danger">Supprimer</button></a>
+        </div>
+    {% endfor %}
+    
+</div>
 	{# <p class="display-6 pt-4 pb-0 text-muted">Nombre de membres :
 		{{ controller_name|length }}</p>
 
