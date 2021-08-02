@@ -33,6 +33,32 @@ class IndexController extends AbstractController
         return $this->render('index/cheatsheet.html.twig');
     }
 
+    #[Route('/bulletin/create', name: 'bulletin_create')]
+    public function bulletinCreate(Request $request)
+    {
+        // Cete fonction nous servira à afficher un formulaire capable de créer un nouveau bulletin
+        // Tout d'abord, nous appelons l'Entity Manager pour communiquer avec norre BDD
+        $entityManager = $this->getDoctrine()->getManager();
+        // ensuite, nous créons un nouveau bulletin que nous lions à notre formulaire$bulletin = new Bulletin;
+        $bulletin = new Bulletin;
+        $bulletinForm = $this->createForm(\App\Form\BulletinType::class, $bulletin);
+        // NOus transmetons la requête client à notre formulaire
+        $bulletinForm->handleRequest($request);
+        // Si le formulaire a été validé
+        if ($request->isMethod('post') && $bulletinForm->isValid()) {
+            // handleRequest ayant passé les infos à notre objet bulletin, nous avons juste à le persister
+            $entityManager->persist($bulletin);
+
+            $entityManager->flush();
+            return $this->redirect($this->generateUrl('index'));
+        }
+        // Si le formulaire n'a pas été validé, nous l'affichons pour l'utilisateur
+        return $this->render('index/dataform.html.twig', [
+            'formName' => 'Création de bulletin',
+            'dataForm' => $bulletinForm->createView() // createView prépare l'affichage de notre formulaire
+        ]);
+    }
+
     #[Route('/bulletin/display/{bulletinId}', name: 'bulletin_display')]
     public function bulletinDisplay(Request $request, $bulletinId = false)
     {

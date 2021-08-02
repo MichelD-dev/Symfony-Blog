@@ -18,6 +18,9 @@
 		<a href="{{ path('article_generate') }}">
 			<button class="btn btn-outline-success btn-lg" style="margin-bottom:30px;">Générer Article</button>
 		</a>
+		<a href="{{ path('bulletin_create') }}">
+			<button class="btn btn-success btn-lg" style="margin-bottom:30px;">Créer un nouveau bulletin</button>
+		</a>
 		{# équivalent de foreach($bulletins as $bulletin) #}
 		{% for bulletin in bulletins %}
 			<div class="alert alert-{{ bulletin.status }} px-5 py-4">
@@ -39,9 +42,9 @@
 
 	</div>
 	{# <p class="display-6 pt-4 pb-0 text-muted">Nombre de membres :
-					{{ controller_name|length }}</p>
-			
-				{% for name in controller_name %}
-					{% include "card/card.html.twig"  %}
-				{% endfor %} #}
+						{{ controller_name|length }}</p>
+				
+					{% for name in controller_name %}
+						{% include "card/card.html.twig"  %}
+					{% endfor %} #}
 {% endblock %}
