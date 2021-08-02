@@ -3,18 +3,34 @@
 namespace App\Controller;
 
 use App\Entity\Bulletin;
-use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use App\Form\BulletinType;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
 class IndexController extends AbstractController
 {
     #[Route('/', name: 'index')]
-    public function index(): Response
+    public function index(Request $request): Response
     {
         //Afin de pouvoir dialoguer avec notre base de données, nous avons besoin de l'Entity Manager
         $entityManager = $this->getDoctrine()->getManager();
+        // ensuite, nous créons un nouveau bulletin que nous lions à notre formulaire$bulletin = new Bulletin;
+        $bulletin = new Bulletin;
+
+        $bulletinForm = $this->createForm(\App\Form\BulletinType::class, $bulletin);
+        // NOus transmetons la requête client à notre formulaire
+        $bulletinForm->handleRequest($request);
+        // Si le formulaire a été validé
+        if ($request->isMethod('post') && $bulletinForm->isValid()) {
+            // handleRequest ayant passé les infos à notre objet bulletin, nous avons juste à le persister
+            $entityManager->persist($bulletin);
+
+            $entityManager->flush();
+            return $this->redirect($this->generateUrl('index'));
+        }
+
         //Nous récupérons le Repository de l'Entity qui nous intéresse, à savoir, Bulletin
         $bulletinRepository = $entityManager->getRepository(Bulletin::class);
         //Nous récupérons la totalité des entrées de la table Bulletin, sous forme d'un tableau d'instances de classe Bulletin
@@ -24,6 +40,8 @@ class IndexController extends AbstractController
         //Nous envoyons notre bulletin tel quel à la page index.html.twig
         return $this->render('index/index.html.twig', [
             'bulletins' => $bulletins,
+            'formName' => 'Création de bulletin',
+            'dataForm' => $bulletinForm->createView()
         ]);
     }
 
@@ -79,6 +97,38 @@ class IndexController extends AbstractController
         //A présent, il faut envoyer ce tableau vers notre page twig
         return $this->render('index/index.html.twig', [
             'bulletins' => $bulletins,
+        ]);
+    }
+
+    #[Route('/bulletin/update/{bulletinId}', name: 'bulletin_update')]
+    public function bulletinUpdate(Request $request, $bulletinId = false): Response
+    {
+        // Cette fonction a pour but de récupérer un bulletin et d'en modifier le contenu
+        // Nous commençons par récuperer l'Entity Manager et le Repository de Bulletin
+        $entityManager = $this->getDoctrine()->getManager();
+        $bulletinRepository = $entityManager->getRepository(Bulletin::class);
+        // NOus récupérons le bulletin dont l'Id nous a été communiqué
+        $bulletin = $bulletinRepository->find($bulletinId);
+        // Si aucun bulletin n'est retrouvé, nous retournons vers l'index
+        if (!$bulletin) {
+            return $this->redirect($this->generateUrl('index'));
+        }
+        // Si un bulletin existe, la fonction continue et nous lions ce bulletin à un formulaire
+        // Etant donné que $bulletin est déjà renseigné, les champs du formulaire seront préremplis
+        $bulletinForm = $this->createForm(\App\Form\BulletinType::class, $bulletin);
+        // NOus appliquons la Request si celle ci est pertinente
+        $bulletinForm->handleRequest($request);
+        // Si notre bulletin est valide et rempli, nous l'envoyons vers notre BDD
+        if ($request->isMethod('post') && $bulletinForm->isValid()) {
+            $entityManager->persist($bulletin);
+            $entityManager->flush();
+            // Nous retournons vers l'index
+            return $this->redirect($this->generateUrl('index'));
+        }
+        // Si le bulletin n'a pas été rempli, nous affichons le formulaire
+        return $this->render('index/dataform.html.twig', [
+            'formName' => 'Création de bulletin',
+            'dataForm' => $bulletinForm->createView() // createView prépare l'affichage de notre formulaire
         ]);
     }
 

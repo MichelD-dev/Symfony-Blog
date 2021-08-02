@@ -25,9 +25,9 @@ class BulletinType extends AbstractType
             ->add('category', ChoiceType::class, [
                 'label' => 'Catégorie:',
                 'choices' => [
-                    'Général' => 'general',
-                    'Urgent' => 'urgent',
-                    'Divers' => 'divers'
+                    'Général' => 'General',
+                    'Urgent' => 'Urgent',
+                    'Divers' => 'Divers'
                 ],
                 'expanded' => false, // change l'affichage en boutons plutôt que liste
                 'multiple' => false, // permet de faire un choix multiple
