@@ -20,9 +20,11 @@
 	<body class="d-flex flex-column h-100">
 		{% include 'layout/header.html.twig' %}
 		<main class="flex-shrink-0">
-			<div class="container mt-5"> {% block body %}{% endblock %}
-				</div>
-			</main>
+			<div class="container mt-5">
+				{% block body %}
+				{% endblock %}
+			</div>
+		</main>
 			{% include 'layout/footer.html.twig' %}
-		</body>
-	</html>
+	</body>
+</html>

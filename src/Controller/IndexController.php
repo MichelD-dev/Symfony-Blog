@@ -3,10 +3,12 @@
 namespace App\Controller;
 
 use App\Entity\Bulletin;
-use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use App\Form\BulletinType;
+use App\Repository\BulletinRepository;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
 class IndexController extends AbstractController
 {
@@ -33,6 +35,40 @@ class IndexController extends AbstractController
         return $this->render('index/cheatsheet.html.twig');
     }
 
+    #[Route('/bulletin/create', name: 'bulletin_create')]
+    public function bulletinCreate(Request $request)
+    {
+        // Cete fonction nous servira à afficher un formulaire capable de créer un nouveau bulletin
+        // Tout d'abord, nous appelons l'Entity Manager pour communiquer avec norre BDD
+        $entityManager = $this->getDoctrine()->getManager();
+        // ensuite, nous créons un nouveau bulletin que nous lions à notre formulaire$bulletin = new Bulletin;
+        $bulletin = new Bulletin;
+        $bulletinForm = $this->createForm(\App\Form\BulletinType::class, $bulletin);
+        // NOus transmetons la requête client à notre formulaire
+        $bulletinForm->handleRequest($request);
+        // Si le formulaire a été validé
+        if ($request->isMethod('post') && $bulletinForm->isValid()) {
+            $bulletinRepository = $entityManager->getRepository(Bulletin::class);
+            $bulletin2 = $bulletinRepository->findOneBy(['title' => $bulletin->getTitle()]);
+            if ($bulletin2) {
+                return new Response("<h1>Il existe déjà un bulletin possédant ce nom.</h1>");
+            } else {
+                // handleRequest ayant passé les infos à notre objet bulletin, nous avons juste à le persister
+                $entityManager->persist($bulletin);
+                $entityManager->flush();
+                return $this->redirect($this->generateUrl('index'));
+            }
+            //Soit l'ID existe, et un objet Bulletin est instancié avec les informations de l'entrée récupérée
+            //Soit l'ID n'existe pas, et $bulletin vaut null
+            //Si le bulletin n'est pas trouvé, nous mettons prématurément fin à notre fonction
+        }
+        // Si le formulaire n'a pas été validé, nous l'affichons pour l'utilisateur
+        return $this->render('index/dataform.html.twig', [
+            'formName' => 'Création de bulletin',
+            'dataForm' => $bulletinForm->createView() // createView prépare l'affichage de notre formulaire
+        ]);
+    }
+
     #[Route('/bulletin/display/{bulletinId}', name: 'bulletin_display')]
     public function bulletinDisplay(Request $request, $bulletinId = false)
     {
@@ -53,6 +89,43 @@ class IndexController extends AbstractController
         //A présent, il faut envoyer ce tableau vers notre page twig
         return $this->render('index/index.html.twig', [
             'bulletins' => $bulletins,
+        ]);
+    }
+
+    #[Route('/bulletin/update/{bulletinId}', name: 'bulletin_update')]
+    public function bulletinUpdate(BulletinRepository $bulletinRepository , Request $request, $bulletinId = false): Response
+    {
+        // Cette fonction a pour but de récupérer un bulletin et d'en modifier le contenu
+        // Nous commençons par récuperer l'Entity Manager et le Repository de Bulletin
+        $entityManager = $this->getDoctrine()->getManager();
+        // $bulletinRepository = $entityManager->getRepository(Bulletin::class);
+        // NOus récupérons le bulletin dont l'Id nous a été communiqué
+        $bulletin = $bulletinRepository->find($bulletinId);
+        // Si aucun bulletin n'est retrouvé, nous retournons vers l'index
+        if (!$bulletin) {
+            return $this->redirect($this->generateUrl('index'));
+        }
+        // Si un bulletin existe, la fonction continue et nous lions ce bulletin à un formulaire
+        // Etant donné que $bulletin est déjà renseigné, les champs du formulaire seront préremplis
+        $bulletinForm = $this->createForm(\App\Form\BulletinType::class, $bulletin);
+        // NOus appliquons la Request si celle ci est pertinente
+        $bulletinForm->handleRequest($request);
+        // Si notre bulletin est valide et rempli, nous l'envoyons vers notre BDD
+        if ($request->isMethod('post') && $bulletinForm->isValid()) {
+            $bulletin2 = $bulletinRepository->findOneBy(['title' => $bulletin->getTitle()]);
+            if ($bulletin2) {
+                return new Response("<h1>Il existe déjà un bulletin possédant ce nom.</h1>");
+            } else {
+                $entityManager->persist($bulletin);
+                $entityManager->flush();
+                // Nous retournons vers l'index
+                return $this->redirect($this->generateUrl('index'));
+            }
+        }
+        // Si le bulletin n'a pas été rempli, nous affichons le formulaire
+        return $this->render('index/dataform.html.twig', [
+            'formName' => 'Modification de bulletin',
+            'dataForm' => $bulletinForm->createView(),
         ]);
     }
 
