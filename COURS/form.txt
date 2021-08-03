@@ -1,0 +1,5 @@
+Les formulaires sous Symfony:
+	- Se composent d'une classe Type choisie et d'un objet associé
+    - Les attributs de l'objet sont repris par les champs du formulaire
+    - Inversement, les champs du formulaires renseignent à nouveau l'objet (au moment de l'exécution de la méthode handleRequest())
+    - C'est l'objet $bulletin qui modifie la table associée de la base de données car c'est l'objet $bulletin qui a pour rôle de transporter les informations, et non le formulaire. En d'autres termes, modifier l'objet $bulletin avant son envoi vers la base de données est une modification des informations qui seront envoyées, même si on ne touche pas au formulaire. Le formulaire est une plateforme pour que le client entre des informations, ce n'est pas le centre de dépot des informations, contrairement à l'Entity (Bulletin).

@@ -52,7 +52,7 @@ class IndexController extends AbstractController
     }
 
     #[Route('/bulletin/create', name: 'bulletin_create')]
-    public function bulletinCreate(Request $request)
+    public function bulletinCreate(Request $request): Response
     {
         // Cete fonction nous servira à afficher un formulaire capable de créer un nouveau bulletin
         // Tout d'abord, nous appelons l'Entity Manager pour communiquer avec norre BDD
@@ -64,11 +64,17 @@ class IndexController extends AbstractController
         $bulletinForm->handleRequest($request);
         // Si le formulaire a été validé
         if ($request->isMethod('post') && $bulletinForm->isValid()) {
-            // handleRequest ayant passé les infos à notre objet bulletin, nous avons juste à le persister
-            $entityManager->persist($bulletin);
-
-            $entityManager->flush();
-            return $this->redirect($this->generateUrl('index'));
+            // handleRequest ayant passé les infos à notre objet bulletin, nous avons juste à le persisterO
+            $entityManager = $this->getDoctrine()->getManager();
+            $bulletinRepository = $entityManager->getRepository(Bulletin::class);
+            $bulletinDuplicate = $bulletinRepository->findOneBy(['title' => $bulletin->getTitle()]);
+            if (!$bulletinDuplicate) {
+                $entityManager->persist($bulletin);
+                $entityManager->flush();
+                return $this->redirect($this->generateUrl('index'));
+            } else {
+                return new Response("<h1>Opération impossible. Ce titre existe déjà dans la base de données.</h1>");
+            }
         }
         // Si le formulaire n'a pas été validé, nous l'affichons pour l'utilisateur
         return $this->render('index/dataform.html.twig', [
@@ -120,9 +126,17 @@ class IndexController extends AbstractController
         $bulletinForm->handleRequest($request);
         // Si notre bulletin est valide et rempli, nous l'envoyons vers notre BDD
         if ($request->isMethod('post') && $bulletinForm->isValid()) {
+            // NOus vérifions s'il existe un bulletin au même titre EN PLUS de notre bulletin
+            // NOus récupérons le nom de notre bulletin actuel
+            // Nous récupérons tous les bulletins dont le titre est identique
+            $bulletins = $bulletinRepository->findBy(['title' => $bulletin->getTitle()]);
+            // Nous créeons une boucle pour vérifier si les bulletins de même titre ne sont pas notre bulletin modifié
+            foreach ($bulletins as $bulletinUnit) {
+                if($bulletinUnit->getId() != $bulletin->getId()) {
+                    return new Response("<h1>Opération impossible. Ce titre existe déjà dans la base de données.</h1>");}
+            }
             $entityManager->persist($bulletin);
             $entityManager->flush();
-            // Nous retournons vers l'index
             return $this->redirect($this->generateUrl('index'));
         }
         // Si le bulletin n'a pas été rempli, nous affichons le formulaire
@@ -296,5 +310,12 @@ class IndexController extends AbstractController
                 3 => 'Matthieu'
             ]
         ]);
+    }
+
+    #[Route('/test/{name}', name: 'test')]
+    public function test(Request $request, $name): Response
+    {
+
+        return new Response("Hello {$name}");
     }
 }
