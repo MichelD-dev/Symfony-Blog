@@ -1,0 +1,24 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Formulaire
+	{{ formName }}
+	-
+	{{ parent() }}
+{% endblock %}
+
+{% block stylesheets %}
+	{{ parent() }}
+	<br/>
+	<link rel="stylesheet" href="{{ asset('assets/css/style.css') }}">
+	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.5.0/font/bootstrap-icons.css">
+{% endblock %}
+
+{% block body %}
+	<div style="max-width: 1000px; margin:auto;">
+		<div class='bg-light p-5 pt-2 mt-5' style=''>
+			<h1 class='display-5 text-center text-muted mb-5' style='margin-top:40px;'>{{ formName }}</h1>
+			<div class='fs-4 fw-light'>{{ form(dataForm) }}</div>
+			</div>
+		</div>
+
+	{% endblock %}

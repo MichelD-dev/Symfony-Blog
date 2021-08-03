@@ -13,10 +13,25 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 class IndexController extends AbstractController
 {
     #[Route('/', name: 'index')]
-    public function index(): Response
+    public function index(Request $request): Response
     {
         //Afin de pouvoir dialoguer avec notre base de données, nous avons besoin de l'Entity Manager
         $entityManager = $this->getDoctrine()->getManager();
+        // ensuite, nous créons un nouveau bulletin que nous lions à notre formulaire$bulletin = new Bulletin;
+        $bulletin = new Bulletin;
+
+        $bulletinForm = $this->createForm(\App\Form\BulletinType::class, $bulletin);
+        // NOus transmetons la requête client à notre formulaire
+        $bulletinForm->handleRequest($request);
+        // Si le formulaire a été validé
+        if ($request->isMethod('post') && $bulletinForm->isValid()) {
+            // handleRequest ayant passé les infos à notre objet bulletin, nous avons juste à le persister
+            $entityManager->persist($bulletin);
+
+            $entityManager->flush();
+            return $this->redirect($this->generateUrl('index'));
+        }
+
         //Nous récupérons le Repository de l'Entity qui nous intéresse, à savoir, Bulletin
         $bulletinRepository = $entityManager->getRepository(Bulletin::class);
         //Nous récupérons la totalité des entrées de la table Bulletin, sous forme d'un tableau d'instances de classe Bulletin
@@ -26,6 +41,8 @@ class IndexController extends AbstractController
         //Nous envoyons notre bulletin tel quel à la page index.html.twig
         return $this->render('index/index.html.twig', [
             'bulletins' => $bulletins,
+            'formName' => 'Création de bulletin',
+            'dataForm' => $bulletinForm->createView()
         ]);
     }
 
@@ -36,7 +53,7 @@ class IndexController extends AbstractController
     }
 
     #[Route('/bulletin/create', name: 'bulletin_create')]
-    public function bulletinCreate(Request $request)
+    public function bulletinCreate(Request $request): Response
     {
         // Cete fonction nous servira à afficher un formulaire capable de créer un nouveau bulletin
         // Tout d'abord, nous appelons l'Entity Manager pour communiquer avec norre BDD
@@ -48,19 +65,17 @@ class IndexController extends AbstractController
         $bulletinForm->handleRequest($request);
         // Si le formulaire a été validé
         if ($request->isMethod('post') && $bulletinForm->isValid()) {
+            // handleRequest ayant passé les infos à notre objet bulletin, nous avons juste à le persisterO
+            $entityManager = $this->getDoctrine()->getManager();
             $bulletinRepository = $entityManager->getRepository(Bulletin::class);
-            $bulletin2 = $bulletinRepository->findOneBy(['title' => $bulletin->getTitle()]);
-            if ($bulletin2) {
-                return new Response("<h1>Il existe déjà un bulletin possédant ce nom.</h1>");
-            } else {
-                // handleRequest ayant passé les infos à notre objet bulletin, nous avons juste à le persister
+            $bulletinDuplicate = $bulletinRepository->findOneBy(['title' => $bulletin->getTitle()]);
+            if (!$bulletinDuplicate) {
                 $entityManager->persist($bulletin);
                 $entityManager->flush();
                 return $this->redirect($this->generateUrl('index'));
+            } else {
+                return new Response("<h1>Opération impossible. Ce titre existe déjà dans la base de données.</h1>");
             }
-            //Soit l'ID existe, et un objet Bulletin est instancié avec les informations de l'entrée récupérée
-            //Soit l'ID n'existe pas, et $bulletin vaut null
-            //Si le bulletin n'est pas trouvé, nous mettons prématurément fin à notre fonction
         }
         // Si le formulaire n'a pas été validé, nous l'affichons pour l'utilisateur
         return $this->render('index/dataform.html.twig', [
@@ -112,20 +127,23 @@ class IndexController extends AbstractController
         $bulletinForm->handleRequest($request);
         // Si notre bulletin est valide et rempli, nous l'envoyons vers notre BDD
         if ($request->isMethod('post') && $bulletinForm->isValid()) {
-            $bulletin2 = $bulletinRepository->findOneBy(['title' => $bulletin->getTitle()]);
-            if ($bulletin2) {
-                return new Response("<h1>Il existe déjà un bulletin possédant ce nom.</h1>");
-            } else {
-                $entityManager->persist($bulletin);
-                $entityManager->flush();
-                // Nous retournons vers l'index
-                return $this->redirect($this->generateUrl('index'));
+            // NOus vérifions s'il existe un bulletin au même titre EN PLUS de notre bulletin
+            // NOus récupérons le nom de notre bulletin actuel
+            // Nous récupérons tous les bulletins dont le titre est identique
+            $bulletins = $bulletinRepository->findBy(['title' => $bulletin->getTitle()]);
+            // Nous créeons une boucle pour vérifier si les bulletins de même titre ne sont pas notre bulletin modifié
+            foreach ($bulletins as $bulletinUnit) {
+                if($bulletinUnit->getId() != $bulletin->getId()) {
+                    return new Response("<h1>Opération impossible. Ce titre existe déjà dans la base de données.</h1>");}
             }
+            $entityManager->persist($bulletin);
+            $entityManager->flush();
+            return $this->redirect($this->generateUrl('index'));
         }
         // Si le bulletin n'a pas été rempli, nous affichons le formulaire
         return $this->render('index/dataform.html.twig', [
-            'formName' => 'Modification de bulletin',
-            'dataForm' => $bulletinForm->createView(),
+            'formName' => 'Création de bulletin',
+            'dataForm' => $bulletinForm->createView() // createView prépare l'affichage de notre formulaire
         ]);
     }
 
@@ -293,5 +311,12 @@ class IndexController extends AbstractController
                 3 => 'Matthieu'
             ]
         ]);
+    }
+
+    #[Route('/test/{name}', name: 'test')]
+    public function test(Request $request, $name): Response
+    {
+
+        return new Response("Hello {$name}");
     }
 }
