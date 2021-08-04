@@ -158,16 +158,10 @@ class IndexController extends AbstractController
         if ($request->isMethod('post') && $bulletinForm->isValid()) {
 
             // NOus vérifions s'il existe un bulletin au même titre EN PLUS de notre bulletin
-            // NOus récupérons le nom de notre bulletin actuel
+            // Nous récupérons le nom de notre bulletin actuel
             // Nous récupérons tous les bulletins dont le titre est identique
             $bulletins = $bulletinRepository->findBy(['title' => $bulletin->getTitle()]);
-            return $this->render('index/dump.html.twig', ['variable' => $bulletins]); //TODO
-            // Nous créeons une boucle pour vérifier si les bulletins de même titre ne sont pas notre bulletin modifié
-            foreach ($bulletins as $bulletinUnit) {
-                if ($bulletinUnit->getId() != $bulletin->getId()) {
-                    return new Response("<h1>Opération impossible. Ce titre existe déjà dans la base de données.</h1>");
-                }
-            }
+            // return $this->render('index/dump.html.twig', ['variable' => $bulletins]);
             $entityManager->persist($bulletin);
             $entityManager->flush();
             return $this->redirect($this->generateUrl('index'));
@@ -200,7 +194,7 @@ class IndexController extends AbstractController
         //Nous retournons vers l'index
         return $this->redirect($this->generateUrl('index'));
     }
-//TODO
+    //TODO
     #[Route('/tag/create', name: 'tag_create')]
     public function TagCreate(Request $request): Response
     {

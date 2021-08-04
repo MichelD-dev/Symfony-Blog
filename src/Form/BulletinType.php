@@ -5,6 +5,7 @@ namespace App\Form;
 use App\Entity\Bulletin;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
+use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
@@ -35,6 +36,14 @@ class BulletinType extends AbstractType
                     'class' => 'mb-5'
                 ]
             ])
+            ->add('tags', EntityType::class, [
+                'label' => 'Tags',
+                'class' => \App\Entity\Tag::class, // Le nom de l'Entity que nous voulons attribuer à ce champ
+                'choice_label' => 'name', // L'attribut de notre Entity que nous voulons utiliser comme label pour chaque choix
+                'expanded' => true, // change l'affichage en checks plutôt que list
+                'multiple' => true, // permet de faire un choix multiple, renvoie ici une erreur si false, parce que nous sommes en ManyToMany (nous récupérons un TABLEAU de tags, même si choix unique)
+            ])
+
             ->add('content', TextareaType::class, [
                 'label' => 'Contenu:',
                 'attr' => [
