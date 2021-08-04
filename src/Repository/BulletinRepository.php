@@ -3,8 +3,8 @@
 namespace App\Repository;
 
 use App\Entity\Bulletin;
-use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
+use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 
 /**
  * @method Bulletin|null find($id, $lockMode = null, $lockVersion = null)
@@ -14,6 +14,14 @@ use Doctrine\Persistence\ManagerRegistry;
  */
 class BulletinRepository extends ServiceEntityRepository
 {
+    public function findEachCategory()
+    {
+        return $this->createQueryBuilder('b')
+            ->andWhere('b.category')->distinct()
+            ->getQuery()
+            ->getResult();
+    }
+
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, Bulletin::class);

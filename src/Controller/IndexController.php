@@ -39,7 +39,8 @@ class IndexController extends AbstractController
         $bulletins = array_reverse($bulletins); //Nous utilisons PHP pour inverser l'ordre de notre tableau
 
         //Nous envoyons notre bulletin tel quel à la page index.html.twig
-        return $this->render('index/index.html.twig', [
+        return $this->render('index/index.html.twig', [ //FIXME
+            // 'categories' => $bulletinRepository->findEachCategory(),
             'bulletins' => $bulletins,
             'formName' => 'Création de bulletin',
             'dataForm' => $bulletinForm->createView()
@@ -51,6 +52,31 @@ class IndexController extends AbstractController
     {
         return $this->render('index/cheatsheet.html.twig');
     }
+   
+    // #[Route('/category/{category}', name: 'bulletin_category')]
+    // public function indexCategory(Request $request, $category = false): Response
+    // {
+    //     $entityManager = $this->getDoctrine()->getManager();
+    //     $bulletinRepository = $entityManager->getRepository(Bulletin::class);
+    //     // $categories = $bulletinRepository->findEachCategory();
+    //     //La fonction findEachCategory rend un tableau de tableaux
+     
+    //     // $categorizedBulletins = $bulletinRepository->findBy(['category' => $categories]);
+
+    //     // return $this->render('index/dump.html.twig', ['variable' => $categories]);
+    //     // if (!$categorizedBulletins) {
+    //     //     return $this->redirect($this->generateUrl('index'));
+    //     // }
+  
+    //     // $bulletins = array_reverse($categorizedBulletins);
+    //     return $this->render('index/category.html.twig', [
+    //         'bulletins' => $bulletins,
+    //         // 'categories' => $bulletinRepository->findEachCategory(),
+    //         'formName' => 'Création de bulletin',
+    //         // 'dataForm' => $bulletinForm->createView()
+    //     ]);
+    // }
+
 
     #[Route('/bulletin/create', name: 'bulletin_create')]
     public function bulletinCreate(Request $request): Response
@@ -103,12 +129,13 @@ class IndexController extends AbstractController
         $bulletins = [$bulletin];
         //A présent, il faut envoyer ce tableau vers notre page twig
         return $this->render('index/index.html.twig', [
+            // 'categories' => $bulletinRepository->findEachCategory(),
             'bulletins' => $bulletins,
         ]);
     }
 
     #[Route('/bulletin/update/{bulletinId}', name: 'bulletin_update')]
-    public function bulletinUpdate(BulletinRepository $bulletinRepository , Request $request, $bulletinId = false): Response
+    public function bulletinUpdate(BulletinRepository $bulletinRepository, Request $request, $bulletinId = false): Response
     {
         // Cette fonction a pour but de récupérer un bulletin et d'en modifier le contenu
         // Nous commençons par récuperer l'Entity Manager et le Repository de Bulletin
@@ -127,14 +154,17 @@ class IndexController extends AbstractController
         $bulletinForm->handleRequest($request);
         // Si notre bulletin est valide et rempli, nous l'envoyons vers notre BDD
         if ($request->isMethod('post') && $bulletinForm->isValid()) {
+          
             // NOus vérifions s'il existe un bulletin au même titre EN PLUS de notre bulletin
             // NOus récupérons le nom de notre bulletin actuel
             // Nous récupérons tous les bulletins dont le titre est identique
             $bulletins = $bulletinRepository->findBy(['title' => $bulletin->getTitle()]);
+            return $this->render('index/dump.html.twig', ['variable' => $bulletins]); //TODO
             // Nous créeons une boucle pour vérifier si les bulletins de même titre ne sont pas notre bulletin modifié
             foreach ($bulletins as $bulletinUnit) {
-                if($bulletinUnit->getId() != $bulletin->getId()) {
-                    return new Response("<h1>Opération impossible. Ce titre existe déjà dans la base de données.</h1>");}
+                if ($bulletinUnit->getId() != $bulletin->getId()) {
+                    return new Response("<h1>Opération impossible. Ce titre existe déjà dans la base de données.</h1>");
+                }
             }
             $entityManager->persist($bulletin);
             $entityManager->flush();
