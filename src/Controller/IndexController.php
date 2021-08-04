@@ -79,6 +79,24 @@ class IndexController extends AbstractController
     //     ]);
     // }
 
+    #[Route('/tag/{tagId}', name: 'index_tag')]
+    public function indexTag(Request $request, $tagId = false): Response
+    {
+        // Cette fonction a pour but d'afficher la totalité des bulletins associés à un certain Tag
+        $entityManager = $this->getDoctrine()->getManager();
+        $TagRepository = $entityManager->getRepository(Tag::class);
+        // Nous récupérons le Tag dont l'id est spécifié par notre URL
+        $tag = $TagRepository->find($tagId);
+        // Si aucun résultat n'est spécifié, nous retournons à l'index
+        if (!$tag) {
+            return $this->redirect($this->generateUrl('index'));
+        }
+        // return $this->render('index/dump.html.twig', ['variable' => $tag]);
+        // Nous transmettons la liste des Bulletins liés au Tag à la vue Twig
+        return $this->render('index/index.html.twig', [
+            'bulletins' => $tag->getBulletins()
+        ]);
+    }
 
     #[Route('/bulletin/create', name: 'bulletin_create')]
     public function bulletinCreate(Request $request): Response
@@ -194,7 +212,7 @@ class IndexController extends AbstractController
         //Nous retournons vers l'index
         return $this->redirect($this->generateUrl('index'));
     }
-    //TODO
+
     #[Route('/tag/create', name: 'tag_create')]
     public function TagCreate(Request $request): Response
     {
