@@ -31,12 +31,12 @@
 			{% endif %}
 			{% if bulletinForm is defined %}{% endif %}
 			{# <div class='bg-light p-5 pt-2 my-5' style=''>
-																		<h1 class='display-5 text-center text-muted mb-5' style='margin-top:40px;'>{{ formName }}</h1>
-																		<div class='fs-4 fw-light'>
-																			{{ form(dataForm) }}
-																			</div>
-																		</div>
-																	</div> #}
+																					<h1 class='display-5 text-center text-muted mb-5' style='margin-top:40px;'>{{ formName }}</h1>
+																					<div class='fs-4 fw-light'>
+																						{{ form(dataForm) }}
+																						</div>
+																					</div>
+																				</div> #}
 
 			{# équivalent de foreach($bulletins as $bulletin) #}
 			{% for bulletin in bulletins %}
@@ -47,10 +47,10 @@
 					<p>
 						<strong>Tags:</strong>
 						{% if bulletin.tags is empty %}}
-							Aucun
+														Aucun
 						{% else %}
 							{% for tag in bulletin.tags %}
-								{{ tag.name }};
+								<a href='{{ path('index_tag', {'tagId': tag.id}) }}'>{{ tag.name }}</a>;
 							{% endfor %}
 						{% endif %}
 					</p>
@@ -71,9 +71,9 @@
 			{% endfor %}
 		</div>
 		{# <p class="display-6 pt-4 pb-0 text-muted">Nombre de membres :
-																										{{ controller_name|length }}</p>
-																								
-																									{% for name in controller_name %}
-																										{% include "card/card.html.twig"  %}
-																									{% endfor %} #}
+																												{{ controller_name|length }}</p>
+																										
+																											{% for name in controller_name %}
+																												{% include "card/card.html.twig"  %}
+																											{% endfor %} #}
 	{% endblock %}
