@@ -1,6 +1,59 @@
+Les Formulaires sous Symfony
 
-Les formulaires sous Symfony:
-	- Se composent d'une classe Type choisie et d'un objet associé
-    - Les attributs de l'objet sont repris par les champs du formulaire
-    - Inversement, les champs du formulaires renseignent à nouveau l'objet (au moment de l'exécution de la méthode handleRequest())
-    - C'est l'objet $bulletin qui modifie la table associée de la base de données car c'est l'objet $bulletin qui a pour rôle de transporter les informations, et non le formulaire. En d'autres termes, modifier l'objet $bulletin avant son envoi vers la base de données est une modification des informations qui seront envoyées, même si on ne touche pas au formulaire. Le formulaire est une plateforme pour que le client entre des informations, ce n'est pas le centre de dépot des informations, contrairement à l'Entity (Bulletin).
+
+Dans le cadre de Symfony, les formulaires sont un aspect très pris en charge et grandement automatisé. Si, même en PHP/HTML classique, la rédaction et la prise en charge de formulaire sont un aspect essentiel des requêtes client et donc du fonctionnement général du site, en Symfony, cet aspect est encore davantage poussé grâce à la flexibilité du générateur de formulaire avec lequel il possible de les spécialiser. Ce générateur est le Form Builder.
+
+Le Form Builder est une classe Symfony dont l'instance prend plusieurs options afin de créer un formulaire correspondant aux critères que se donne le développeur. Le Formulaire est ensuite automatiquement traité par Symfony et mis en relation avec l'instance de l'Entity concernée via l'utilisation de simples fonctions telles que handleRequest($request).
+Etant donné que dans le cadre d'un site web en production, la majorité des informations vouées à remplir notre base de données viendra à nous via des requêtes client, le formulaire est un aspect essentiel de la construction du Model de notre application. L'usage du Form Builder est donc de première importance.
+
+Il existe deux types de formulaires créés via le Form Builder, ceux créés par le développeur dans le cadre du Controller, et ceux générés de l'extérieur par une classe spécialisée. Le second est ce qu'on appelle un formulaire externalisé et sera le principal type de formulaire employé par notre application.
+
+La caractéristique des formulaires externalisés est non seulement qu'ils sont indépendants des controllers mais également liés à des Entity (Il est possible de créer un formulaire externalisé non lié à une Entity mais nous ne nous en servirons pas). Le formulaire externalisé a donc pour avantage d'être facile à requérir à partir de la classe Form et d'être conçu directement sur mesure pour notre Entity. Mais il a pour défaut de ne pas être aussi flexible qu'un formulaire construit depuis notre Controller qui par l'action de développeur est capable de s'adapter à une plus grande multitude de cas.
+
+Le formulaire externalisé est généré à partir d'une commande de notre console:
+	php bin/console make:form
+	
+Il faudra renseigner le nom de notre classe Form ainsi que le nom de l'Entity à laquelle ce formulaire est lié. La génération est directement effectuée ensuite.
+
+Le formulaire généré possède automatiquement autant de champs qu'il existe d'attributs dans notre Entity, id excepté. Le formulaire ainsi généré est cependant inutilisable du fait qu'il manque un champ/bouton de validation afin de soumettre le formulaire. C'est pourquoi il est nécessaire d'ajouter à la fin de la fonction de création du formulaire builder, via la fonction ->add(), un nouveau champ de type SubmitType, qui fait référence à un bouton de validation. Il ne faudra pas oublier le use associé, qui est donc: 
+	use Symfony\Component\Form\Extension\Core\Type\SubmitType;
+
+Une fois ceci effectué, le formulaire, si basique, est utilisable et génèrera bien une requête complète et utilisable une fois rempli et validé. Il nous faudra ensuite créer une fonction au sein de notre controller capable de prendre avantage de cette requête.
+
+Une fonction du Controller gérant un formulaire doit donc implémenter l'objet Request dans ses paramètre, et utiliser les fonctions du formulaire Symfony. La première fonction nécessaire sert à la génération du formulaire, il s'agit de $this->createForm(), qui prend en paramètre/argument la classe de formulaire associé ainsi qu'une instance de l'Entity précédemment initialisée. Il suffit alors de générer la vue de notre formulaire via la fonction $dataForm->createView() et de la passer en paramètre via Twig pour obtenir un résultat. Twig, pour afficher le formulaire, requiert la fonction:
+	{{ form(dataForm) }}
+
+Le formulaire est à présent généré. Il faut récupérer son contenu et le mettre dans notre base de données. Les fonctions de formulaire de Symfony automatisent tout le processus. La fonction handleRequest($request) prend le contenu de la requête si celle-ci est compatible avec le formulaire de l'Entity et applique les nouvelles valeurs à l'instance associée. Une fois cette requête gérée, il est possible de vérifier si le formulaire est en l'état valide grâce à la fonction form->isValid(), qui, conjointement à la vérification de la passation de la requête via la méthode POST via $request->isMethod('post'), servira de condition 'if' pour préparer la passation des informations vers la base de données par l'Entity Manager.
+
+L'Entity Manager, auquel est donc communiqué une instance d'Entity complète, transmet cette nouvelle entrée à la base de données de la même manière qu'avec les fixtures, c'est-à-dire par la préparation de requêtes SQL via la méthode persist() et l'exécution de cette liste de requêtes par la méthode flush().
+En effet, la génération du formulaire et sa gestion, et l'envoi de l'instance de l'Entity vers notre base de données, sont deux processus absolument différents faisant appel à différents modules de Symfony, bien qu'associés ensemble dans la même fonction de notre controller.
+Il ne s'agit pas du gestionnaire de formulaire qui prépare l'envoi du contenu de notre requête vers la base de données. Il s'agit de la récupération de l'Entity liée au formulaire par notre Entity Manager, qui prépare ce transfert.
+Cela signifie donc qu'il est possible de modifier au préalable la nature de l'instance de notre Entity avant de la passer à l'Entity Manager pour le transfert.
+
+La fonction de prise en charge typique du formulaire est donc:
+
+	public function form(Request $request){
+		$entityManager = $this->getDoctrine()->getManager();
+
+		$article = new Article;
+		$form = $this->createForm(\App\Form\ArticleType::class, $article);
+
+		$form->handleRequest($request); // Récupère les informations du formulaire validé et les applique à l'objet Entity lié
+
+		if($request->isMethod('post') && $form->isValid()){
+			$entityManager->persist($article);
+			$entityManager->flush();
+			return $this->redirect($this->generateUrl('index'));
+		}
+
+		return $this->render('index/form.html.twig', [
+			'dataForm' => $form->createView(),
+		]);
+	}
+
+Le formulaire externalisé peut être personnalisé via les différentes classes Type prises en charge. La liste complète des Type, des options et des différentes possibilités offertes est présente dans la documentation, à l'adresse suivante:
+	https://symfony.com/doc/current/reference/forms/types.html
+
+Enfin, le formulaire peut, directement dans la configuration Symfony, être configuré pour utiliser le code CSS Bootstrap. Pour cela, il faut aller dans le fichier 'config/packages/twig.yaml', puis, en respectant les indentations, ajouter la ligne suivante:
+	form_themes: ['bootstrap_4_layout.html.twig']
+Il est à noter que l'inclusion des CSS bootstrap reste nécessaire pour ce choix de style dans les formulaire générés.

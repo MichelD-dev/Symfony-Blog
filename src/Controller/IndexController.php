@@ -2,6 +2,8 @@
 
 namespace App\Controller;
 
+use App\Entity\Tag;
+use App\Form\TagType;
 use App\Entity\Bulletin;
 use App\Form\BulletinType;
 use App\Repository\BulletinRepository;
@@ -52,7 +54,7 @@ class IndexController extends AbstractController
     {
         return $this->render('index/cheatsheet.html.twig');
     }
-   
+
     // #[Route('/category/{category}', name: 'bulletin_category')]
     // public function indexCategory(Request $request, $category = false): Response
     // {
@@ -60,14 +62,14 @@ class IndexController extends AbstractController
     //     $bulletinRepository = $entityManager->getRepository(Bulletin::class);
     //     // $categories = $bulletinRepository->findEachCategory();
     //     //La fonction findEachCategory rend un tableau de tableaux
-     
+
     //     // $categorizedBulletins = $bulletinRepository->findBy(['category' => $categories]);
 
     //     // return $this->render('index/dump.html.twig', ['variable' => $categories]);
     //     // if (!$categorizedBulletins) {
     //     //     return $this->redirect($this->generateUrl('index'));
     //     // }
-  
+
     //     // $bulletins = array_reverse($categorizedBulletins);
     //     return $this->render('index/category.html.twig', [
     //         'bulletins' => $bulletins,
@@ -154,7 +156,7 @@ class IndexController extends AbstractController
         $bulletinForm->handleRequest($request);
         // Si notre bulletin est valide et rempli, nous l'envoyons vers notre BDD
         if ($request->isMethod('post') && $bulletinForm->isValid()) {
-          
+
             // NOus vérifions s'il existe un bulletin au même titre EN PLUS de notre bulletin
             // NOus récupérons le nom de notre bulletin actuel
             // Nous récupérons tous les bulletins dont le titre est identique
@@ -197,6 +199,28 @@ class IndexController extends AbstractController
         $entityManager->flush();
         //Nous retournons vers l'index
         return $this->redirect($this->generateUrl('index'));
+    }
+//TODO
+    #[Route('/tag/create', name: 'tag_create')]
+    public function TagCreate(Request $request): Response
+    {
+        $entityManager = $this->getDoctrine()->getManager();
+        // Nous créons notre formulaire
+        $tag = new Tag;
+        $tagForm = $this->createForm(\App\Form\TagType::class, $tag);
+        // Nous transmettons la requête client à notre formulaire et nous le validons
+        $tagForm->handleRequest($request);
+        // Si le formulaire a été validé
+        if ($request->isMethod('post') && $tagForm->isValid()) {
+            $entityManager->persist($tag);
+            $entityManager->flush();
+            return $this->redirect($this->generateUrl('index'));
+        }
+        // Si le formulaire n'a pas été validé, nous l'affichons pour l'utilisateur
+        return $this->render('index/dataform.html.twig', [
+            'formName' => 'Création de tag',
+            'dataForm' => $tagForm->createView() // createView prépare l'affichage de notre formulaire
+        ]);
     }
 
     #[Route('/article-generate', name: 'article_generate')]

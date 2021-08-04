@@ -1,0 +1,7 @@
+
+
+$bulletin->addTag($tag); //On ajoute $tag au tableau $tags de $bulletin
+$entityManager->persist($bulletin);
+$entityManager->flush();
+
+Ici, lorsque le bulletin sera persisté, il sera persisté avec un Tag existant et identifiable dans la base de données. Doctrine traduira ce lien de possession du Tag par le Bulletin en jointure entre tables (ici, la table bulletin_tag où les id des deux Bulletin et Tag sont notés pour une prochaine récupération de notre base de données).
