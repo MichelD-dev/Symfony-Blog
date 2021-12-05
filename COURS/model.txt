@@ -26,6 +26,8 @@ Les Entities peuvent être générées à partir d'une commande via notre termin
 	php bin/console make:entity
 Plusieurs questions seront alors posées via le terminal afin de pouvoir définir de manière complète notre Entity, avant de la générer automatiquement, par la création de deux classes PHP, une classe Entity et une classe Repository.
 
+(Après avoir créé les liens que l'on désire entre Entities (correspondant aux jointures), il faut faire php bin/console make:entity --regenerate App pour créer les getters et setters correspondants).
+
 Le maker ne fait que créer les classes Entity pour notre application. Il ne se charge pas de les transmettre à notre base de données. Pour cela, il faudra demander à Doctrine d'analyser nos classes et de générer une série de commandes SQL pour les traduire en tables relationnelles classiques. Pour cela, nous devons utiliser une procédure que nous appelons la migration.
 
 Comme son nom l'indique, la migration est la transmission de notre classe vers la base de données: il s'agit d'un déplacement d'un concept (Orienté Objet) à un autre (Données Relationnelles). La classe Migration est une classe PHP ayant pour fonction de gérer ce processus. Elle est automatiquement préparée par Doctrine via la commande suivante:
